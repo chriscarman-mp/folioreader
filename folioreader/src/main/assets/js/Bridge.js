@@ -729,7 +729,7 @@ function scrollToNodeOrRange(nodeOrRange) {
             console.log('>>> nodeOffsetLeft: ', nodeOffsetLeft);
             var pageIndex = Math.floor(nodeOffsetLeft / clientWidth);
             console.log(">>> pageIndex floored: ", Math.floor(nodeOffsetLeft / clientWidth));
-            console.log(">>> pageIndex rounded: ", Math.rounded(nodeOffsetLeft / clientWidth));
+            console.log(">>> pageIndex rounded: ", Math.round(nodeOffsetLeft / clientWidth));
             var newScrollLeft = clientWidth * pageIndex;
             console.log(">>> newScrollLeft:", newScrollLeft);
             scrollingElement.scrollLeft = newScrollLeft;
