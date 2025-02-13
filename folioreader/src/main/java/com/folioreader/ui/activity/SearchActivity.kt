@@ -95,16 +95,14 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         Log.v(LOG_TAG, "-> onCreate")
-
         val config: Config = AppUtil.getSavedConfig(this)!!
         if (config.isNightMode) {
             setTheme(R.style.FolioNightTheme)
         } else {
             setTheme(R.style.FolioDayTheme)
         }
-
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
         init(config)
     }
