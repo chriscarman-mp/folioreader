@@ -725,9 +725,13 @@ function scrollToNodeOrRange(nodeOrRange) {
 
         case Direction.HORIZONTAL:
             var clientWidth = document.documentElement.clientWidth;
-            var pageIndex = Math.round(nodeOffsetLeft / clientWidth);
+            console.log('>>> clientWidth: ', clientWidth);
+            console.log('>>> nodeOffsetLeft: ', nodeOffsetLeft);
+            var pageIndex = Math.floor(nodeOffsetLeft / clientWidth);
+            console.log(">>> pageIndex floored: ", Math.floor(nodeOffsetLeft / clientWidth));
+            console.log(">>> pageIndex rounded: ", Math.rounded(nodeOffsetLeft / clientWidth));
             var newScrollLeft = clientWidth * pageIndex;
-            //console.log("-> newScrollLeft = " + newScrollLeft);
+            console.log(">>> newScrollLeft:", newScrollLeft);
             scrollingElement.scrollLeft = newScrollLeft;
             WebViewPager.setCurrentPage(pageIndex);
             break;
