@@ -725,7 +725,7 @@ function scrollToNodeOrRange(nodeOrRange) {
 
         case Direction.HORIZONTAL:
             var clientWidth = document.documentElement.clientWidth;
-            var pageIndex = Math.floor(nodeOffsetLeft / clientWidth);
+            var pageIndex = Math.round(nodeOffsetLeft / clientWidth);
             var newScrollLeft = clientWidth * pageIndex;
             //console.log("-> newScrollLeft = " + newScrollLeft);
             scrollingElement.scrollLeft = newScrollLeft;
