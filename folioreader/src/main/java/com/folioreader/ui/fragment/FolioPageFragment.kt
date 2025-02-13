@@ -22,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.viewpager.widget.ViewPager
 import com.folioreader.Config
@@ -57,8 +58,19 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.math.floor
 
-class FolioPageFragment(private var pageViewModel: PageTrackerViewModel) : Fragment(),
+class FolioPageFragment() : Fragment(),
     HtmlTaskCallback, MediaControllerCallbacks, FolioWebView.SeekBarListener {
+
+    private lateinit var pageViewModel: PageTrackerViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pageViewModel = ViewModelProvider(
+            requireActivity(),
+            ViewModelProvider.NewInstanceFactory()
+        ).get(PageTrackerViewModel::class.java)
+    }
+
     override fun onResume() {
         super.onResume()
         pageViewModel.setCurrentPage(webViewPager?.currentItem?.plus(1) ?: 0)
@@ -81,10 +93,9 @@ class FolioPageFragment(private var pageViewModel: PageTrackerViewModel) : Fragm
             spineIndex: Int,
             bookTitle: String,
             spineRef: Link,
-            bookId: String,
-            viewModel: PageTrackerViewModel
+            bookId: String
         ): FolioPageFragment {
-            val fragment = FolioPageFragment(viewModel)
+            val fragment = FolioPageFragment()
             val args = Bundle()
             args.putInt(BUNDLE_SPINE_INDEX, spineIndex)
             args.putString(BUNDLE_BOOK_TITLE, bookTitle)
