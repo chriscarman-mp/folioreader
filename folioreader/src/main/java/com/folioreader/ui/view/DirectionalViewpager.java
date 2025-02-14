@@ -841,6 +841,7 @@ public class DirectionalViewpager extends ViewGroup {
      */
     public void setPageMargin(int marginPixels) {
         final int oldMargin = mPageMargin;
+        Log.d(TAG, ">>> pageMargin: " + oldMargin);
         mPageMargin = marginPixels;
 
         if (isHorizontal()) {
@@ -860,6 +861,7 @@ public class DirectionalViewpager extends ViewGroup {
      * @return The size of the margin in pixels
      */
     public int getPageMargin() {
+        Log.d(TAG, ">>> pageMargin: " + mPageMargin);
         return mPageMargin;
     }
 
