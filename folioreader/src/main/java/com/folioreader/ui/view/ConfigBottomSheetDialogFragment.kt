@@ -16,6 +16,7 @@ import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.folioreader.Config
@@ -48,7 +49,7 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var isNightMode = false
     private lateinit var activityCallback: FolioActivityCallback
 
-    private var container: RelativeLayout? = null
+    private var container: ConstraintLayout? = null
     private lateinit var view_config_font_size_seek_bar: SeekBar
     private lateinit var view_config_ib_day_mode: ImageButton
     private lateinit var view_config_ib_night_mode: ImageButton
@@ -68,6 +69,8 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        config = AppUtil.getSavedConfig(requireContext())!!
 
         if (activity is FolioActivity)
             activityCallback = activity as FolioActivity
