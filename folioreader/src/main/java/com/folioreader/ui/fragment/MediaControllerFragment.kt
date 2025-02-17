@@ -72,13 +72,13 @@ class MediaControllerFragment : BottomSheetDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         Log.v(LOG_TAG, "-> onCreateDialog")
 
-        bottomSheetDialog = BottomSheetDialog(context!!)
+        bottomSheetDialog = BottomSheetDialog(requireContext())
         val view = View.inflate(context, R.layout.view_audio_player, null)
         bindViews(view)
         bottomSheetDialog.setContentView(view)
         bottomSheetBehavior = BottomSheetBehavior.from(view.parent as View)
 
-        mTouchOutsideView = ((view.parent as View).parent as View).findViewById(R.id.touch_outside)
+        mTouchOutsideView = ((view.parent as View).parent as View).findViewById(com.google.android.material.R.id.touch_outside)
         mTouchOutsideView.setOnTouchListener { _, event ->
 
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -172,16 +172,16 @@ class MediaControllerFragment : BottomSheetDialogFragment() {
 
         if (Build.VERSION.SDK_INT >= 24) {
             btnOneAndHalfSpeed?.text =
-                Html.fromHtml(context!!.getString(R.string.one_and_half_speed), 0)
-            btnHalfSpeed?.text = Html.fromHtml(context!!.getString(R.string.half_speed_text), 0)
+                Html.fromHtml(requireContext().getString(R.string.one_and_half_speed), 0)
+            btnHalfSpeed?.text = Html.fromHtml(requireContext().getString(R.string.half_speed_text), 0)
             btnTextUnderlineStyle?.text =
-                Html.fromHtml(context!!.getString(R.string.style_underline), 0)
+                Html.fromHtml(requireContext().getString(R.string.style_underline), 0)
         } else {
             btnOneAndHalfSpeed?.text =
-                Html.fromHtml(context!!.getString(R.string.one_and_half_speed))
-            btnHalfSpeed?.text = Html.fromHtml(context!!.getString(R.string.half_speed_text))
+                Html.fromHtml(requireContext().getString(R.string.one_and_half_speed))
+            btnHalfSpeed?.text = Html.fromHtml(requireContext().getString(R.string.half_speed_text))
             btnTextUnderlineStyle?.text =
-                Html.fromHtml(context!!.getString(R.string.style_underline))
+                Html.fromHtml(requireContext().getString(R.string.style_underline))
         }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
@@ -198,49 +198,49 @@ class MediaControllerFragment : BottomSheetDialogFragment() {
         btnHalfSpeed?.setTextColor(
             UiUtil.getColorList(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         btnOneAndHalfSpeed?.setTextColor(
             UiUtil.getColorList(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         btnTwoXSpeed?.setTextColor(
             UiUtil.getColorList(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         btnOneXSpeed?.setTextColor(
             UiUtil.getColorList(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         btnTextUnderlineStyle?.setTextColor(
             UiUtil.getColorList(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         btnBackColorStyle?.setTextColor(
             UiUtil.getColorList(
-                ContextCompat.getColor(context!!, R.color.white),
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.white),
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         btnBackColorStyle?.setBackgroundDrawable(
             UiUtil.createStateDrawable(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, android.R.color.transparent)
+                ContextCompat.getColor(requireContext(), android.R.color.transparent)
             )
         )
         btnTextColorStyle?.setTextColor(
             UiUtil.getColorList(
                 config.currentThemeColor,
-                ContextCompat.getColor(context!!, R.color.grey_color)
+                ContextCompat.getColor(requireContext(), R.color.grey_color)
             )
         )
         UiUtil.setColorIntToDrawable(config.currentThemeColor, playPauseButton?.drawable)
@@ -254,7 +254,7 @@ class MediaControllerFragment : BottomSheetDialogFragment() {
             if (isPlaying) {
                 playPauseButton?.setImageDrawable(
                     ContextCompat.getDrawable(
-                        context!!,
+                        requireContext(),
                         R.drawable.ic_play
                     )
                 )
@@ -263,7 +263,7 @@ class MediaControllerFragment : BottomSheetDialogFragment() {
             } else {
                 playPauseButton?.setImageDrawable(
                     ContextCompat.getDrawable(
-                        context!!,
+                        requireContext(),
                         R.drawable.ic_pause
                     )
                 )
@@ -332,14 +332,14 @@ class MediaControllerFragment : BottomSheetDialogFragment() {
     }
 
     fun setPlayButtonDrawable() {
-        playPauseButton?.setImageDrawable(ContextCompat.getDrawable(context!!, R.drawable.ic_play))
+        playPauseButton?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ic_play))
     }
 
     fun setNightMode() {
-        container?.setBackgroundColor(ContextCompat.getColor(context!!, R.color.night))
+        container?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.night))
     }
 
     fun setDayMode() {
-        container?.setBackgroundColor(ContextCompat.getColor(context!!, R.color.white))
+        container?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
     }
 }

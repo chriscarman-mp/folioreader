@@ -1,3 +1,6 @@
+### Build
+./gradlew clean -Pgroup=com.github.chriscarman-mp -Pversion=2.1.1 -xtest -xlint publishToMavenLocal
+
 ![FolioReader logo](https://raw.githubusercontent.com/FolioReader/FolioReaderKit/assets/folioreader.png)
 
 [![Build Status](https://api.travis-ci.org/FolioReader/FolioReader-Android.svg?branch=master)](https://travis-ci.org/FolioReader/FolioReader-Android)

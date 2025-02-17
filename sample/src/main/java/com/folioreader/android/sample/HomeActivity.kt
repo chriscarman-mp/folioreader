@@ -146,18 +146,22 @@ class HomeActivity : AppCompatActivity(), OnHighlightListener, ReadLocatorListen
     private val highlightsAndSave: Unit
         get() {
             Thread {
-                var highlightList: ArrayList<HighLight?>? = null
+                var highlightList: ArrayList<HighLight>? = null
                 val objectMapper = ObjectMapper()
                 try {
-                    highlightList = objectMapper.readValue<ArrayList<HighLight?>>(
-                        loadAssetTextAsString("highlights/highlights_data.json"),
-                        object : TypeReference<List<HighlightData?>?>() {})
+                    val jsonString = loadAssetTextAsString("highlights/highlights_data.json")
+                    // Use a TypeReference that exactly matches the expected type.
+                    highlightList = objectMapper.readValue(
+                        jsonString,
+                        object : TypeReference<ArrayList<HighLight>>() {}
+                    )
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-                if (highlightList == null) {
+                // Only save if we got a non-null list.
+                if (highlightList != null) {
                     folioReader.saveReceivedHighLights(highlightList) {
-                        //You can do anything on successful saving highlight list
+                        // Callback on successful saving of highlight list
                     }
                 }
             }.start()

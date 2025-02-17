@@ -29,7 +29,7 @@ task checkstyle(type: Checkstyle, group: 'Verification', description: 'Runs code
     include '**/*.java'
 
     reports {
-        xml.enabled = true
+//        xml.enabled = true
         xml {
             destination = file("$reportsDir/checkstyle/checkstyle.xml")
         }
@@ -56,8 +56,8 @@ tasks.withType(SpotBugsTask) {
     source = fileTree('src')
 
     reports {
-        xml.enabled = false
-        html.enabled = true
+//        xml.enabled = false
+//        html.enabled = true
         xml {
             destination = file("$reportsDir/spotbugs/spotbugs.xml")
         }
@@ -79,8 +79,8 @@ task pmd(type: Pmd, group: 'Verification', description: 'Inspect sourcecode for 
     exclude '**/gen/**'
 
     reports {
-        xml.enabled = true
-        html.enabled = true
+//        xml.enabled = true
+//        html.enabled = true
         xml {
             destination = file("$reportsDir/pmd/pmd.xml")
         }

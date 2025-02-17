@@ -31,7 +31,6 @@ import com.folioreader.ui.view.FolioSearchView
 import com.folioreader.util.AppUtil
 import com.folioreader.util.UiUtil
 import com.folioreader.viewmodels.SearchViewModel
-import kotlinx.android.synthetic.main.activity_search.*
 import java.lang.reflect.Field
 
 class SearchActivity : AppCompatActivity(), OnItemClickListener {
@@ -70,6 +69,8 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
                 v: View?, left: Int, top: Int, right: Int, bottom: Int,
                 oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
             ) {
+
+                val toolbar = findViewById<Toolbar>(R.id.toolbar)
 
                 for (i in 0 until toolbar.childCount) {
 
@@ -110,6 +111,7 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
     private fun init(config: Config) {
         Log.v(LOG_TAG, "-> init")
 
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         toolbar.addOnLayoutChangeListener(toolbarOnLayoutChangeListener)
         actionBar = supportActionBar!!
@@ -131,6 +133,9 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
         searchAdapter = SearchAdapter(this)
         searchAdapter.onItemClickListener = this
         linearLayoutManager = LinearLayoutManager(this)
+
+        // Obtain recyclerView explicitly
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.adapter = searchAdapter
 
@@ -154,6 +159,7 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
         Log.v(LOG_TAG, "-> onNewIntent")
 
         if (intent.hasExtra(BUNDLE_SEARCH_URI)) {
@@ -214,6 +220,7 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     override fun onBackPressed() {
+        super.onBackPressed()
         Log.v(LOG_TAG, "-> onBackPressed")
     }
 
@@ -271,13 +278,11 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
         })
 
         itemSearch.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-
-            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                return true
+            override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
+                return true;
             }
 
-            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                Log.v(LOG_TAG, "-> onMenuItemActionCollapse")
+            override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
                 navigateBack()
                 return false
             }

@@ -8,7 +8,7 @@ versions.projectVersionCode = 1
 versions.projectVersionName = "1.0"
 
 versions.androidMinSdk = 21
-versions.androidCompileSdk = 31
+versions.androidCompileSdk = 34
 versions.androidTargetSdk = 31
 
 versions.androidGradlePlugin = '7.2.0'

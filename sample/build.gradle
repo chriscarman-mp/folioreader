@@ -1,16 +1,15 @@
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
-
-    compileSdkVersion versions.androidCompileSdk
+    namespace "com.folioreader.android.sample"
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.folioreader.android.sample"
-        minSdkVersion versions.androidMinSdk
-        targetSdkVersion versions.androidTargetSdk
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode versions.projectVersionCode
         versionName versions.projectVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -43,9 +42,18 @@ android {
         exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     lintOptions {
         abortOnError false
     }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions.jvmTarget = "17"
 }
 
 dependencies {
@@ -59,10 +67,10 @@ dependencies {
     implementation project(':folioreader')
     //implementation "com.folioreader:folioreader:$versions.folioreaderSdk"
 
-    implementation "com.fasterxml.jackson.core:jackson-core:$versions.jackson"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:$versions.jackson"
-    implementation "com.fasterxml.jackson.core:jackson-databind:$versions.jackson"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$versions.jackson"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.14.0"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.14.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.14.0"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.14.0"
 
     //progressBar error solve
     configurations.matching { it.name == '_internal_aapt2_binary' }.all { config ->

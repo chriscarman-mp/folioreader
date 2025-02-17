@@ -11,7 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.RelativeLayout
 import android.widget.SeekBar
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.folioreader.Config
@@ -26,7 +30,6 @@ import com.folioreader.util.UiUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.android.synthetic.main.view_config.*
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -45,6 +48,16 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var isNightMode = false
     private lateinit var activityCallback: FolioActivityCallback
 
+    private var container: RelativeLayout? = null
+    private lateinit var view_config_font_size_seek_bar: SeekBar
+    private lateinit var view_config_ib_day_mode: ImageButton
+    private lateinit var view_config_ib_night_mode: ImageButton
+    private lateinit var view_config_font_spinner: Spinner
+    private lateinit var view5: View
+    private lateinit var buttonVertical: TextView
+    private lateinit var buttonHorizontal: TextView
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -59,22 +72,26 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (activity is FolioActivity)
             activityCallback = activity as FolioActivity
 
-        view.viewTreeObserver.addOnGlobalLayoutListener {
-            val dialog = dialog as BottomSheetDialog
-            val bottomSheet =
-                dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
-            val behavior = BottomSheetBehavior.from(bottomSheet!!)
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.peekHeight = 0
-        }
+        // Bind views from the inflated layout:
+        bindConfigViews(view)
 
-        config = AppUtil.getSavedConfig(activity)!!
         initViews()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         view?.viewTreeObserver?.addOnGlobalLayoutListener(null)
+    }
+
+    private fun bindConfigViews(rootView: View) {
+        container = rootView.findViewById(R.id.container)
+        view_config_font_size_seek_bar = rootView.findViewById(R.id.view_config_font_size_seek_bar)
+        view_config_ib_day_mode = rootView.findViewById(R.id.view_config_ib_day_mode)
+        view_config_ib_night_mode = rootView.findViewById(R.id.view_config_ib_night_mode)
+        view_config_font_spinner = rootView.findViewById(R.id.view_config_font_spinner)
+        view5 = rootView.findViewById(R.id.view5)
+        buttonVertical = rootView.findViewById(R.id.buttonVertical)
+        buttonHorizontal = rootView.findViewById(R.id.buttonHorizontal)
     }
 
     private fun initViews() {
@@ -85,9 +102,9 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
         selectFont(config.font, false)
         isNightMode = config.isNightMode
         if (isNightMode) {
-            container.setBackgroundColor(ContextCompat.getColor(context!!, R.color.night))
+            container?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.night))
         } else {
-            container.setBackgroundColor(ContextCompat.getColor(context!!, R.color.white))
+            container?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
         }
 
         if (isNightMode) {
@@ -173,13 +190,13 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         val colorStateList = UiUtil.getColorList(
             config.currentThemeColor,
-            ContextCompat.getColor(context!!, R.color.grey_color)
+            ContextCompat.getColor(requireContext(), R.color.grey_color)
         )
 
         buttonVertical.setTextColor(colorStateList)
         buttonHorizontal.setTextColor(colorStateList)
 
-        val adapter = FontAdapter(config, context!!)
+        val adapter = FontAdapter(config, requireContext())
 
         view_config_font_spinner.adapter = adapter
 
@@ -223,8 +240,8 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun toggleBlackTheme() {
 
-        val day = ContextCompat.getColor(context!!, R.color.white)
-        val night = ContextCompat.getColor(context!!, R.color.night)
+        val day = ContextCompat.getColor(requireContext(), R.color.white)
+        val night = ContextCompat.getColor(requireContext(), R.color.night)
 
         val colorAnimation = ValueAnimator.ofObject(
             ArgbEvaluator(),
@@ -234,7 +251,7 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         colorAnimation.addUpdateListener { animator ->
             val value = animator.animatedValue as Int
-            container.setBackgroundColor(value)
+            container?.setBackgroundColor(value)
         }
 
         colorAnimation.addListener(object : Animator.AnimatorListener {
@@ -260,9 +277,9 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val typedArray = activity?.theme?.obtainStyledAttributes(attrs)
             val defaultNavigationBarColor = typedArray?.getColor(
                 0,
-                ContextCompat.getColor(context!!, R.color.white)
+                ContextCompat.getColor(requireContext(), R.color.white)
             )
-            val black = ContextCompat.getColor(context!!, R.color.black)
+            val black = ContextCompat.getColor(requireContext(), R.color.black)
 
             val navigationColorAnim = ValueAnimator.ofObject(
                 ArgbEvaluator(),
