@@ -662,21 +662,18 @@ function bodyOrHtml() {
  * @returns {(Element|Text|Range)} nodeOrRange
  */
 function scrollToNodeOrRange(nodeOrRange) {
+    console.log('>>> scrollToNodeOrRange ...');
+    logNodeOrRange(nodeOrRange);
 
-    var scrollingElement = bodyOrHtml();
-    var direction = FolioWebView.getDirection();
+    const scrollingElement = bodyOrHtml();
+    const direction = FolioWebView.getDirection();
 
-    // For Direction.VERTICAL
-    var nodeOffsetTop, nodeOffsetHeight;
-
-    // For Direction.HORIZONTAL
-    var nodeOffsetLeft;
+    let nodeOffsetTop, nodeOffsetHeight, nodeOffsetLeft;
 
     if (nodeOrRange instanceof Range || nodeOrRange.nodeType === Node.TEXT_NODE) {
-
-        var rect;
-        if (nodeOrRange.nodeType && nodeOrRange.nodeType === Node.TEXT_NODE) {
-            var range = document.createRange();
+        let rect;
+        if (nodeOrRange.nodeType === Node.TEXT_NODE) {
+            const range = document.createRange();
             range.selectNode(nodeOrRange);
             rect = RangeFix.getBoundingClientRect(range);
         } else {
@@ -685,59 +682,101 @@ function scrollToNodeOrRange(nodeOrRange) {
         nodeOffsetTop = scrollingElement.scrollTop + rect.top;
         nodeOffsetHeight = rect.height;
         nodeOffsetLeft = scrollingElement.scrollLeft + rect.left;
-
     } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
-
         nodeOffsetTop = nodeOrRange.offsetTop;
         nodeOffsetHeight = nodeOrRange.offsetHeight;
         nodeOffsetLeft = nodeOrRange.offsetLeft;
-
     } else {
-        throw("-> Illegal Argument Exception, nodeOrRange -> " + nodeOrRange);
+        throw ("-> Illegal Argument Exception, nodeOrRange -> " + nodeOrRange);
     }
 
     switch (direction) {
-
-        case Direction.VERTICAL:
-            var topDistraction = FolioWebView.getTopDistraction(DisplayUnit.DP);
-            var pageTop = scrollingElement.scrollTop + topDistraction;
-            var pageBottom = scrollingElement.scrollTop + document.documentElement.clientHeight
-                - FolioWebView.getBottomDistraction(DisplayUnit.DP);
-
-            var elementTop = nodeOffsetTop - 20;
+        case Direction.VERTICAL: {
+            const topDistraction = FolioWebView.getTopDistraction(DisplayUnit.DP);
+            const pageTop = scrollingElement.scrollTop + topDistraction;
+            const pageBottom = scrollingElement.scrollTop + document.documentElement.clientHeight - FolioWebView.getBottomDistraction(DisplayUnit.DP);
+            let elementTop = nodeOffsetTop - 20;
             elementTop = elementTop < 0 ? 0 : elementTop;
-            var elementBottom = nodeOffsetTop + nodeOffsetHeight + 20;
-            var needToScroll = (elementTop < pageTop || elementBottom > pageBottom);
+            const elementBottom = nodeOffsetTop + nodeOffsetHeight + 20;
+            const needToScroll = (elementTop < pageTop || elementBottom > pageBottom);
 
-            //console.log("-> topDistraction = " + topDistraction);
-            //console.log("-> pageTop = " + pageTop);
-            //console.log("-> elementTop = " + elementTop);
-            //console.log("-> pageBottom = " + pageBottom);
-            //console.log("-> elementBottom = " + elementBottom);
+            console.log(">>> topDistraction:", topDistraction);
+            console.log(">>> pageTop:", pageTop);
+            console.log(">>> elementTop:", elementTop);
+            console.log(">>> pageBottom:", pageBottom);
+            console.log(">>> elementBottom:", elementBottom);
 
             if (needToScroll) {
-                var newScrollTop = elementTop - topDistraction;
+                let newScrollTop = elementTop - topDistraction;
                 newScrollTop = newScrollTop < 0 ? 0 : newScrollTop;
-                //console.log("-> Scrolled to = " + newScrollTop);
                 scrollingElement.scrollTop = newScrollTop;
             }
             break;
+        }
+        case Direction.HORIZONTAL: {
+            const clientWidth = document.documentElement.clientWidth;
+            console.log('>>> clientWidth:', clientWidth);
 
-        case Direction.HORIZONTAL:
-            var clientWidth = document.documentElement.clientWidth;
-            console.log('>>> clientWidth: ', clientWidth);
-            console.log('>>> nodeOffsetLeft: ', nodeOffsetLeft);
-            var pageIndex = Math.floor(nodeOffsetLeft / clientWidth);
-            console.log(">>> pageIndex floored: ", Math.floor(nodeOffsetLeft / clientWidth));
-            console.log(">>> pageIndex rounded: ", Math.round(nodeOffsetLeft / clientWidth));
-            var newScrollLeft = clientWidth * pageIndex;
+            let elementCenter, elementWidth;
+            let rect;
+
+            if (nodeOrRange instanceof Range || nodeOrRange.nodeType === Node.TEXT_NODE) {
+                if (nodeOrRange.nodeType === Node.TEXT_NODE) {
+                    const parent = nodeOrRange.parentNode;
+                    rect = parent.getBoundingClientRect();
+                    console.log(">>> Using parent's bounding rect for text node:", rect);
+                } else {
+                    rect = RangeFix.getBoundingClientRect(nodeOrRange);
+                    console.log(">>> Range bounding rect:", rect);
+                }
+                // Calculate the center of the rect relative to the document's scroll position.
+                elementCenter = document.scrollingElement.scrollLeft + rect.left + (rect.width / 2);
+                elementWidth = rect.width;
+            } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
+                elementCenter = nodeOrRange.offsetLeft + (nodeOrRange.offsetWidth / 2);
+                elementWidth = nodeOrRange.offsetWidth;
+                console.log(">>> Element offset center:", elementCenter, "offsetWidth:", elementWidth);
+            } else {
+                throw ("-> Illegal Argument Exception, nodeOrRange -> " + nodeOrRange);
+            }
+
+            console.log(">>> Computed elementCenter:", elementCenter);
+            const pageIndex = Math.floor(elementCenter / clientWidth);
+            console.log(">>> pageIndex computed from center:", pageIndex);
+
+            const newScrollLeft = clientWidth * pageIndex;
             console.log(">>> newScrollLeft:", newScrollLeft);
-            scrollingElement.scrollLeft = newScrollLeft;
-            WebViewPager.setCurrentPage(pageIndex);
+
+            // Ensure layout is stable before scrolling.
+            requestAnimationFrame(function () {
+                document.scrollingElement.scrollLeft = newScrollLeft;
+                WebViewPager.setCurrentPage(pageIndex);
+            });
             break;
+        }
     }
 
     return nodeOrRange;
+}
+
+function logNodeOrRange(nodeOrRange) {
+    if (nodeOrRange instanceof Range) {
+        console.log('>>> Type: Range');
+        console.log('>>> Range text:', nodeOrRange.toString());
+        var frag = nodeOrRange.cloneContents();
+        var div = document.createElement('div');
+        div.appendChild(frag);
+        console.log('>>> Range cloneContents HTML:', div.innerHTML);
+    } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
+        console.log('>>> Type: Element');
+        console.log('>>> Outer HTML:', nodeOrRange.outerHTML);
+    } else if (nodeOrRange.nodeType === Node.TEXT_NODE) {
+        console.log('>>> Type: Text Node');
+        console.log('>>> Text content:', nodeOrRange.data);
+    } else {
+        console.log('>>> Other type:', nodeOrRange);
+        console.dir(nodeOrRange);
+    }
 }
 
 function highlightSearchLocator(rangeCfi) {
