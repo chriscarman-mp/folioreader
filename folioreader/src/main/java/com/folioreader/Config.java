@@ -301,12 +301,13 @@ public class Config implements Parcelable {
 
     @ColorInt
     private int getValidColorInt(@ColorInt int colorInt) {
-        if (colorInt < 0) {
-            Log.w(LOG_TAG, "-> getValidColorInt -> Invalid argument colorInt = " + colorInt +
-                    ", Returning DEFAULT_THEME_COLOR_INT = " + DEFAULT_THEME_COLOR_INT);
-            return DEFAULT_THEME_COLOR_INT;
-        }
-        return colorInt;
+//        if (colorInt < 0) {
+//            Log.w(LOG_TAG, "-> getValidColorInt -> Invalid argument colorInt = " + colorInt +
+//                    ", Returning DEFAULT_THEME_COLOR_INT = " + DEFAULT_THEME_COLOR_INT);
+//            return DEFAULT_THEME_COLOR_INT;
+//        }
+//        return colorInt;
+        return DEFAULT_THEME_COLOR_INT;
     }
 
     @ColorInt
