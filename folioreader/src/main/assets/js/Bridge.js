@@ -556,92 +556,103 @@ function horizontalRecheck() {
 }
 
 function initHorizontalDirection() {
-
+    // Reset and apply the column layout
     preInitHorizontalDirection();
+
+    // Calculate the total scroll width and page count
     postInitHorizontalDirection();
 
-    horizontalInterval = setInterval(horizontalRecheck, horizontalIntervalPeriod);
+    horizontalInterval = setInterval(() => {
+        horizontalIntervalCounter += horizontalIntervalPeriod;
+
+        // Recalculate scroll width and page count if necessary
+        const newScrollWidth = document.documentElement.scrollWidth;
+        if (newScrollWidth !== scrollWidth) {
+            console.warn("Scroll width changed. Recalculating layout...");
+            postInitHorizontalDirection();
+        }
+
+        // Stop checking after the limit is reached
+        if (horizontalIntervalCounter >= horizontalIntervalLimit) {
+            clearInterval(horizontalInterval);
+        }
+    }, horizontalIntervalPeriod);
 }
 
+// Before updating Style.css
+//function preInitHorizontalDirection() {
+//    // Reset styles to avoid interference
+//    document.documentElement.style.width = null;
+//    document.body.style.width = null;
+//    document.documentElement.style.height = null;
+//    document.body.style.height = null;
+//
+//    // Get screen width and padding
+//    const screenWidth = document.documentElement.clientWidth;
+//    const padding = 16; // Desired padding per side (e.g., 16px)
+//
+//    // Calculate effective page width (screen width - 2 * padding)
+//    const effectivePageWidth = screenWidth - 2 * padding;
+//
+//    // Apply CSS column layout
+//    document.body.style.webkitColumnGap = '0px'; // No gap between columns
+//    document.body.style.webkitColumnWidth = `${effectivePageWidth}px`; // Column width = screen width - 2*padding
+//    document.body.style.columnFill = 'auto'; // Ensure columns are filled sequentially
+//
+//    // Set heights to match the screen height
+//    const screenHeight = document.documentElement.clientHeight;
+//    document.documentElement.style.height = `${screenHeight}px`;
+//    document.body.style.height = `${screenHeight}px`;
+//
+//    // Add padding to the body
+//    document.body.style.padding = `0 ${padding}px`;
+//    document.body.style.boxSizing = 'border-box'; // Include padding in column width
+//}
+
 function preInitHorizontalDirection() {
+    // Reset styles to avoid interference
+    document.documentElement.style.width = null;
+    document.body.style.width = null;
+    document.documentElement.style.height = null;
+    document.body.style.height = null;
 
-    //console.log(window);
-    //console.log("-> " + document.getElementsByTagName('title')[0].innerText);
-    var htmlElement = document.getElementsByTagName('html')[0];
-    var bodyElement = document.getElementsByTagName('body')[0];
+    // Get screen width and padding
+    const screenWidth = document.documentElement.clientWidth;
+    const padding = 16; // Desired padding per side (e.g., 16px)
 
-    // Required when initHorizontalDirection() is called multiple times.
-    // Currently it is called only once per page.
-    htmlElement.style.width = null;
-    bodyElement.style.width = null;
-    htmlElement.style.height = null;
-    bodyElement.style.height = null;
+    // Calculate effective page width (screen width - 2 * padding)
+    const effectivePageWidth = screenWidth - 2 * padding;
 
-    var bodyStyle = bodyElement.currentStyle || window.getComputedStyle(bodyElement);
-    var paddingTop = parseInt(bodyStyle.paddingTop, 10);
-    var paddingRight = parseInt(bodyStyle.paddingRight, 10);
-    var paddingBottom = parseInt(bodyStyle.paddingBottom, 10);
-    var paddingLeft = parseInt(bodyStyle.paddingLeft, 10);
-    //console.log("-> padding = " + paddingTop + ", " + paddingRight + ", " + paddingBottom + ", " + paddingLeft);
+    // Apply CSS column layout
+    document.body.style.webkitColumnGap = '0px'; // No gap between columns
+    document.body.style.webkitColumnWidth = `${effectivePageWidth}px`; // Column width = screen width - 2*padding
+    document.body.style.columnFill = 'auto'; // Ensure columns are filled sequentially
 
-    //document.documentElement.clientWidth is window.innerWidth excluding x scrollbar width
-    var pageWidth = document.documentElement.clientWidth - (paddingLeft + paddingRight);
-    //document.documentElement.clientHeight is window.innerHeight excluding y scrollbar height
-    var pageHeight = document.documentElement.clientHeight - (paddingTop + paddingBottom);
+    // Set heights to match the screen height
+    const screenHeight = document.documentElement.clientHeight;
+    document.documentElement.style.height = `${screenHeight}px`;
+    document.body.style.height = `${screenHeight}px`;
 
-    bodyElement.style.webkitColumnGap = (paddingLeft + paddingRight) + 'px';
-    bodyElement.style.webkitColumnWidth = pageWidth + 'px';
-    bodyElement.style.columnFill = 'auto';
-
-    //console.log("-> window.innerWidth = " + window.innerWidth);
-    //console.log("-> window.innerHeight = " + window.innerHeight);
-    //console.log("-> clientWidth = " + document.documentElement.clientWidth);
-    //console.log("-> clientHeight = " + document.documentElement.clientHeight);
-    //console.log("-> bodyElement.offsetWidth = " + bodyElement.offsetWidth);
-    //console.log("-> bodyElement.offsetHeight = " + bodyElement.offsetHeight);
-    //console.log("-> pageWidth = " + pageWidth);
-    //console.log("-> pageHeight = " + pageHeight);
-
-    htmlElement.style.height = (pageHeight + (paddingTop + paddingBottom)) + 'px';
-    bodyElement.style.height = pageHeight + 'px';
+    // Add padding to the content container
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'content-container';
+    document.body.appendChild(contentContainer);
 }
 
 function postInitHorizontalDirection() {
+    // Get screen width and total scroll width
+    const screenWidth = document.documentElement.clientWidth;
+    const scrollWidth = document.documentElement.scrollWidth;
 
-    var htmlElement = document.getElementsByTagName('html')[0];
-    var bodyElement = document.getElementsByTagName('body')[0];
-    var bodyStyle = bodyElement.currentStyle || window.getComputedStyle(bodyElement);
-    var paddingTop = parseInt(bodyStyle.paddingTop, 10);
-    var paddingRight = parseInt(bodyStyle.paddingRight, 10);
-    var paddingBottom = parseInt(bodyStyle.paddingBottom, 10);
-    var paddingLeft = parseInt(bodyStyle.paddingLeft, 10);
-    var clientWidth = document.documentElement.clientWidth;
+    // Calculate the number of pages
+    const pageCount = Math.ceil(scrollWidth / screenWidth);
 
-    var scrollWidth = document.documentElement.scrollWidth;
-    //console.log("-> document.documentElement.offsetWidth = " + document.documentElement.offsetWidth);
-    if (scrollWidth > clientWidth
-        && scrollWidth > document.documentElement.offsetWidth) {
-        scrollWidth += paddingRight;
-    }
-    var newBodyWidth = scrollWidth - (paddingLeft + paddingRight);
-    window.scrollWidth = scrollWidth;
+    // Log the results for debugging
+    console.log(`Screen Width: ${screenWidth}px`);
+    console.log(`Scroll Width: ${scrollWidth}px`);
+    console.log(`Page Count: ${pageCount}`);
 
-    htmlElement.style.width = scrollWidth + 'px';
-    bodyElement.style.width = newBodyWidth + 'px';
-
-    // pageCount deliberately rounded instead of ceiling to avoid any unexpected error
-    var pageCount = Math.round(scrollWidth / clientWidth);
-    var pageCountFloat = scrollWidth / clientWidth;
-
-    if (pageCount != pageCountFloat) {
-        console.warn("-> pageCount = " + pageCount + ", pageCountFloat = " + pageCountFloat
-            + ", Something wrong in pageCount calculation");
-    }
-
-    //console.log("-> scrollWidth = " + scrollWidth);
-    //console.log("-> newBodyWidth = " + newBodyWidth);
-    //console.log("-> pageCount = " + pageCount);
-
+    // Notify the native layer (e.g., Android) of the page count
     FolioPageFragment.setHorizontalPageCount(pageCount);
 }
 
@@ -662,101 +673,33 @@ function bodyOrHtml() {
  * @returns {(Element|Text|Range)} nodeOrRange
  */
 function scrollToNodeOrRange(nodeOrRange) {
-    console.log('>>> scrollToNodeOrRange ...');
-    logNodeOrRange(nodeOrRange);
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    const screenWidth = document.documentElement.clientWidth;
 
-    const scrollingElement = bodyOrHtml();
-    const direction = FolioWebView.getDirection();
-
-    let nodeOffsetTop, nodeOffsetHeight, nodeOffsetLeft;
+    let elementCenter;
 
     if (nodeOrRange instanceof Range || nodeOrRange.nodeType === Node.TEXT_NODE) {
-        let rect;
-        if (nodeOrRange.nodeType === Node.TEXT_NODE) {
-            const range = document.createRange();
-            range.selectNode(nodeOrRange);
-            rect = RangeFix.getBoundingClientRect(range);
-        } else {
-            rect = RangeFix.getBoundingClientRect(nodeOrRange);
-        }
-        nodeOffsetTop = scrollingElement.scrollTop + rect.top;
-        nodeOffsetHeight = rect.height;
-        nodeOffsetLeft = scrollingElement.scrollLeft + rect.left;
+        // For text nodes or ranges, calculate the center of the bounding box
+        const rect = RangeFix.getBoundingClientRect(nodeOrRange);
+        elementCenter = scrollingElement.scrollLeft + rect.left + (rect.width / 2);
     } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
-        nodeOffsetTop = nodeOrRange.offsetTop;
-        nodeOffsetHeight = nodeOrRange.offsetHeight;
-        nodeOffsetLeft = nodeOrRange.offsetLeft;
+        // For elements, calculate the center based on offset
+        elementCenter = nodeOrRange.offsetLeft + (nodeOrRange.offsetWidth / 2);
     } else {
-        throw ("-> Illegal Argument Exception, nodeOrRange -> " + nodeOrRange);
+        throw new Error("Invalid node or range type");
     }
 
-    switch (direction) {
-        case Direction.VERTICAL: {
-            const topDistraction = FolioWebView.getTopDistraction(DisplayUnit.DP);
-            const pageTop = scrollingElement.scrollTop + topDistraction;
-            const pageBottom = scrollingElement.scrollTop + document.documentElement.clientHeight - FolioWebView.getBottomDistraction(DisplayUnit.DP);
-            let elementTop = nodeOffsetTop - 20;
-            elementTop = elementTop < 0 ? 0 : elementTop;
-            const elementBottom = nodeOffsetTop + nodeOffsetHeight + 20;
-            const needToScroll = (elementTop < pageTop || elementBottom > pageBottom);
+    // Calculate the target page index
+    const pageIndex = Math.floor(elementCenter / screenWidth);
 
-            console.log(">>> topDistraction:", topDistraction);
-            console.log(">>> pageTop:", pageTop);
-            console.log(">>> elementTop:", elementTop);
-            console.log(">>> pageBottom:", pageBottom);
-            console.log(">>> elementBottom:", elementBottom);
+    // Calculate the target scroll position
+    const targetScrollLeft = pageIndex * screenWidth;
 
-            if (needToScroll) {
-                let newScrollTop = elementTop - topDistraction;
-                newScrollTop = newScrollTop < 0 ? 0 : newScrollTop;
-                scrollingElement.scrollTop = newScrollTop;
-            }
-            break;
-        }
-        case Direction.HORIZONTAL: {
-            const clientWidth = document.documentElement.clientWidth;
-            console.log('>>> clientWidth:', clientWidth);
+    // Scroll to the target position
+    scrollingElement.scrollLeft = targetScrollLeft;
 
-            let elementCenter, elementWidth;
-            let rect;
-
-            if (nodeOrRange instanceof Range || nodeOrRange.nodeType === Node.TEXT_NODE) {
-                if (nodeOrRange.nodeType === Node.TEXT_NODE) {
-                    const parent = nodeOrRange.parentNode;
-                    rect = parent.getBoundingClientRect();
-                    console.log(">>> Using parent's bounding rect for text node:", rect);
-                } else {
-                    rect = RangeFix.getBoundingClientRect(nodeOrRange);
-                    console.log(">>> Range bounding rect:", rect);
-                }
-                // Calculate the center of the rect relative to the document's scroll position.
-                elementCenter = document.scrollingElement.scrollLeft + rect.left + (rect.width / 2);
-                elementWidth = rect.width;
-            } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
-                elementCenter = nodeOrRange.offsetLeft + (nodeOrRange.offsetWidth / 2);
-                elementWidth = nodeOrRange.offsetWidth;
-                console.log(">>> Element offset center:", elementCenter, "offsetWidth:", elementWidth);
-            } else {
-                throw ("-> Illegal Argument Exception, nodeOrRange -> " + nodeOrRange);
-            }
-
-            console.log(">>> Computed elementCenter:", elementCenter);
-            const pageIndex = Math.floor(elementCenter / clientWidth);
-            console.log(">>> pageIndex computed from center:", pageIndex);
-
-            const newScrollLeft = clientWidth * pageIndex;
-            console.log(">>> newScrollLeft:", newScrollLeft);
-
-            // Ensure layout is stable before scrolling.
-            requestAnimationFrame(function () {
-                document.scrollingElement.scrollLeft = newScrollLeft;
-                WebViewPager.setCurrentPage(pageIndex);
-            });
-            break;
-        }
-    }
-
-    return nodeOrRange;
+    // Notify the native layer (e.g., Android) of the current page
+    WebViewPager.setCurrentPage(pageIndex);
 }
 
 function logNodeOrRange(nodeOrRange) {

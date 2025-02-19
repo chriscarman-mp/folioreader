@@ -39,9 +39,16 @@ html {
 
 body {
     margin: 0 !important;
-    padding: 100px 20px !important;
-	padding-bottom: 24px !important;
+    padding: 0 !important;
     overflow: !important;
+}
+
+html, body, div, span, img, svg, audio, video {
+    box-sizing: border-box;
+}
+
+.content-container {
+    padding: 16px;
 }
 
 /* Custom padding for tablets */
