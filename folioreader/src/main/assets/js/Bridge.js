@@ -579,36 +579,6 @@ function initHorizontalDirection() {
     }, horizontalIntervalPeriod);
 }
 
-// Before updating Style.css
-//function preInitHorizontalDirection() {
-//    // Reset styles to avoid interference
-//    document.documentElement.style.width = null;
-//    document.body.style.width = null;
-//    document.documentElement.style.height = null;
-//    document.body.style.height = null;
-//
-//    // Get screen width and padding
-//    const screenWidth = document.documentElement.clientWidth;
-//    const padding = 16; // Desired padding per side (e.g., 16px)
-//
-//    // Calculate effective page width (screen width - 2 * padding)
-//    const effectivePageWidth = screenWidth - 2 * padding;
-//
-//    // Apply CSS column layout
-//    document.body.style.webkitColumnGap = '0px'; // No gap between columns
-//    document.body.style.webkitColumnWidth = `${effectivePageWidth}px`; // Column width = screen width - 2*padding
-//    document.body.style.columnFill = 'auto'; // Ensure columns are filled sequentially
-//
-//    // Set heights to match the screen height
-//    const screenHeight = document.documentElement.clientHeight;
-//    document.documentElement.style.height = `${screenHeight}px`;
-//    document.body.style.height = `${screenHeight}px`;
-//
-//    // Add padding to the body
-//    document.body.style.padding = `0 ${padding}px`;
-//    document.body.style.boxSizing = 'border-box'; // Include padding in column width
-//}
-
 function preInitHorizontalDirection() {
     // Reset styles to avoid interference
     document.documentElement.style.width = null;
@@ -618,24 +588,32 @@ function preInitHorizontalDirection() {
 
     // Get screen width and padding
     const screenWidth = document.documentElement.clientWidth;
-    const padding = 16; // Desired padding per side (e.g., 16px)
+    const padding = 20;
 
     // Calculate effective page width (screen width - 2 * padding)
     const effectivePageWidth = screenWidth - 2 * padding;
 
     // Apply CSS column layout
-    document.body.style.webkitColumnGap = '0px'; // No gap between columns
-    document.body.style.webkitColumnWidth = `${effectivePageWidth}px`; // Column width = screen width - 2*padding
-    document.body.style.columnFill = 'auto'; // Ensure columns are filled sequentially
+    document.body.style.webkitColumnGap = '0px';
+    document.body.style.webkitColumnWidth = `${effectivePageWidth}px`;
+    document.body.style.columnFill = 'auto';
+    document.body.style.overscrollBehaviour = 'auto';
 
     // Set heights to match the screen height
     const screenHeight = document.documentElement.clientHeight;
     document.documentElement.style.height = `${screenHeight}px`;
     document.body.style.height = `${screenHeight}px`;
 
-    // Add padding to the content container
+    // Create content container with padding
     const contentContainer = document.createElement('div');
     contentContainer.className = 'content-container';
+    contentContainer.style.paddingLeft = `${padding}px`;
+    contentContainer.style.paddingRight = `${padding}px`;
+
+    // Move existing body content into contentContainer
+    while (document.body.firstChild) {
+        contentContainer.appendChild(document.body.firstChild);
+    }
     document.body.appendChild(contentContainer);
 }
 
