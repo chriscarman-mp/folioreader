@@ -1,5 +1,5 @@
 ### Build
-./gradlew clean -Pgroup=com.github.chriscarman-mp -Pversion=2.1.1 -xtest -xlint publishToMavenLocal
+- Adjust the version here the run `./gradlew clean -Pgroup=com.github.chriscarman-mp -Pversion=2.1.2 -xtest -xlint publishToMavenLocal`
 
 ![FolioReader logo](https://raw.githubusercontent.com/FolioReader/FolioReaderKit/assets/folioreader.png)
 
