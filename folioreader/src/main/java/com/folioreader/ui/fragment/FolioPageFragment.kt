@@ -36,6 +36,7 @@ import com.folioreader.model.event.*
 import com.folioreader.model.locators.ReadLocator
 import com.folioreader.model.locators.SearchLocator
 import com.folioreader.model.sqlite.HighLightTable
+import com.folioreader.ui.activity.FolioActivity
 import com.folioreader.ui.activity.FolioActivityCallback
 import com.folioreader.ui.base.HtmlTask
 import com.folioreader.ui.base.HtmlTaskCallback
@@ -394,6 +395,12 @@ class FolioPageFragment() : Fragment(),
         mWebview = webViewLayout?.findViewById(R.id.folioWebView)
         mWebview?.setParentFragment(this)
         webViewPager = webViewLayout?.findViewById(R.id.webViewPager)
+
+        // Set the outer pager reference:
+        if (activity is FolioActivity) {
+            Log.d(LOG_TAG,">>> setting the WebView's outer pager")
+            webViewPager?.outerPager = (activity as FolioActivity).mFolioPageViewPager
+        }
 
         webViewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(

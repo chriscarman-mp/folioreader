@@ -1,17 +1,15 @@
 package com.folioreader.ui.view
+
 import android.content.Context
-import android.content.Intent
 import android.os.Handler
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.webkit.JavascriptInterface
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.folioreader.R
-import com.folioreader.ui.fragment.FolioPageFragment
 
 class WebViewPager : ViewPager {
 
@@ -19,6 +17,8 @@ class WebViewPager : ViewPager {
         @JvmField
         val LOG_TAG: String = WebViewPager::class.java.simpleName
     }
+
+    var outerPager: DirectionalViewpager? = null
 
     internal var horizontalPageCount: Int = 0
     private var folioWebView: FolioWebView? = null
@@ -30,6 +30,8 @@ class WebViewPager : ViewPager {
 
     private var lastGestureType: LastGestureType? = null
 
+    private var xDown = 0f
+
     private enum class LastGestureType {
         OnSingleTapUp, OnLongPress, OnFling, OnScroll
     }
@@ -40,7 +42,6 @@ class WebViewPager : ViewPager {
     }
 
     private fun init() {
-
         uiHandler = Handler()
         gestureDetector = GestureDetectorCompat(context, GestureListener())
 
@@ -50,56 +51,30 @@ class WebViewPager : ViewPager {
                 positionOffset: Float,
                 positionOffsetPixels: Int
             ) {
-                // Log.d(LOG_TAG, "-> onPageScrolled -> position = " + position +
-                // ", positionOffset = " + positionOffset + ", positionOffsetPixels = " + positionOffsetPixels);
-
                 isScrolling = true
 
                 if (takeOverScrolling && folioWebView != null) {
-                    val scrollX =
-                        folioWebView!!.getScrollXPixelsForPage(position) + positionOffsetPixels
-                    //Log.d(LOG_TAG, "-> onPageScrolled -> scrollX = " + scrollX);
+                    val scrollX = folioWebView!!.getScrollXPixelsForPage(position) + positionOffsetPixels
                     folioWebView!!.scrollTo(scrollX, 0)
                 }
 
                 if (positionOffsetPixels == 0) {
-                    //Log.d(LOG_TAG, "-> onPageScrolled -> takeOverScrolling = false");
                     takeOverScrolling = false
                     isScrolling = false
                 }
             }
 
-
             override fun onPageSelected(position: Int) {
-//
                 Log.v(LOG_TAG, "-> onPageSelected -> $position")
-//                val intent = Intent(this@WebViewPager.context,FolioPageFragment::class.java).apply {
-//                    putExtra("pageNo", position)
-//                }
-//                Log.v(LOG_TAG, "-> Position -> $position")
-//                context.startActivity(intent)
             }
 
-
             override fun onPageScrollStateChanged(state: Int) {
-
+                // No additional handling
             }
         })
     }
 
-
-    private fun getScrollStateString(state: Int): String {
-        return when (state) {
-            ViewPager.SCROLL_STATE_IDLE -> "SCROLL_STATE_IDLE"
-            ViewPager.SCROLL_STATE_DRAGGING -> "SCROLL_STATE_DRAGGING"
-            ViewPager.SCROLL_STATE_SETTLING -> "SCROLL_STATE_SETTLING"
-            else -> "UNKNOWN_STATE"
-        }
-    }
-
     fun setHorizontalPageCount(horizontalPageCount: Int) {
-        //Log.d(LOG_TAG, "-> horizontalPageCount = " + horizontalPageCount);
-
         this.horizontalPageCount = horizontalPageCount
         adapter = WebViewPagerAdapter()
         currentItem = 0
@@ -110,39 +85,34 @@ class WebViewPager : ViewPager {
 
     @JavascriptInterface
     fun setCurrentPage(pageIndex: Int) {
-        Log.v(LOG_TAG, "-> setCurrentItem -> pageIndex = $pageIndex")
-
-        uiHandler!!.post { setCurrentItem(pageIndex, false) }
+        Log.v(LOG_TAG, "-> setCurrentPage -> pageIndex = $pageIndex")
+        uiHandler?.post { setCurrentItem(pageIndex, false) }
     }
 
     @JavascriptInterface
     fun setPageToLast() {
-
-        uiHandler!!.post { currentItem = horizontalPageCount - 1 }
+        uiHandler?.post { currentItem = horizontalPageCount - 1 }
     }
 
     @JavascriptInterface
     fun setPageToFirst() {
-
-        uiHandler!!.post { currentItem = 0 }
+        uiHandler?.post { currentItem = 0 }
     }
 
     private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
-
         override fun onDown(e: MotionEvent): Boolean {
+            // Always return true so subsequent events are received.
             super@WebViewPager.onTouchEvent(e)
             return true
         }
 
         override fun onSingleTapUp(e: MotionEvent): Boolean {
-            //Log.d(LOG_TAG, "-> onSingleTapUp");
             lastGestureType = LastGestureType.OnSingleTapUp
             return false
         }
 
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
-            //Log.d(LOG_TAG, "-> onLongPress -> " + e);
             lastGestureType = LastGestureType.OnLongPress
         }
 
@@ -152,7 +122,6 @@ class WebViewPager : ViewPager {
             distanceX: Float,
             distanceY: Float
         ): Boolean {
-            //Log.v(LOG_TAG, "-> onScroll -> e1 = " + e1 + ", e2 = " + e2 + ", distanceX = " + distanceX + ", distanceY = " + distanceY);
             lastGestureType = LastGestureType.OnScroll
             return false
         }
@@ -163,41 +132,64 @@ class WebViewPager : ViewPager {
             velocityX: Float,
             velocityY: Float
         ): Boolean {
-            //Log.d(LOG_TAG, "-> onFling -> e1 = " + e1 + ", e2 = " + e2 + ", velocityX = " + velocityX + ", velocityY = " + velocityY);
-            lastGestureType = LastGestureType.OnFling
+            Log.d(LOG_TAG, ">>> onFling")
+            Log.d(LOG_TAG, ">>> onFling currentItem: $currentItem")
+            Log.d(LOG_TAG, ">>> onFling horizontalPageCount: $horizontalPageCount")
+            val MIN_FLING_VELOCITY = 1000 // adjust threshold as needed
+
+            // If on the last page and fling left (velocityX negative)
+            if (currentItem == horizontalPageCount - 1 && velocityX < -MIN_FLING_VELOCITY) {
+                outerPager?.let { pager ->
+                    pager.setCurrentItem(pager.currentItem + 1, true)
+                    Log.v(LOG_TAG, ">>> onFling at last page: switching to next chapter")
+                    return true
+                } ?: Log.v(LOG_TAG, ">>> onFling - outerPager is null!")
+            }
+            // If on the first page and fling right (velocityX positive)
+            if (currentItem == 0 && velocityX > MIN_FLING_VELOCITY) {
+                outerPager?.let { pager ->
+                    pager.setCurrentItem(pager.currentItem - 1, true)
+                    Log.v(LOG_TAG, ">>> onFling at first page: switching to previous chapter")
+                    return true
+                } ?: Log.v(LOG_TAG, ">>> onFling - outerPager is null!")
+            }
             return false
         }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        //Log.d(LOG_TAG, "-> onTouchEvent -> " + AppUtil.actionToString(event.getAction()));
+        event ?: return false
 
-        if (event == null)
-            return false
+        // Let gestureDetector handle the event
+        gestureDetector?.onTouchEvent(event)
 
-        // Rare condition in fast scrolling
-        if (gestureDetector == null)
-            return false
-
-        val gestureReturn = gestureDetector!!.onTouchEvent(event)
-        if (gestureReturn)
-            return true
-
-        val superReturn = super.onTouchEvent(event)
-
-        if (event.action == MotionEvent.ACTION_UP) {
-            if (lastGestureType == LastGestureType.OnScroll || lastGestureType == LastGestureType.OnFling) {
-                //Log.d(LOG_TAG, "-> onTouchEvent -> takeOverScrolling = true, " + "lastGestureType = " + lastGestureType);
-                takeOverScrolling = true
+        // Capture initial x coordinate on ACTION_DOWN
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                xDown = event.x
             }
-            lastGestureType = null
+            MotionEvent.ACTION_MOVE -> {
+                val dx = event.x - xDown
+                if (currentItem == horizontalPageCount - 1 && dx < 0) {
+                    // At last page and swiping left: allow parent to intercept
+                    parent?.requestDisallowInterceptTouchEvent(false)
+                } else if (currentItem == 0 && dx > 0) {
+                    // At first page and swiping right: allow parent to intercept
+                    parent?.requestDisallowInterceptTouchEvent(false)
+                } else {
+                    parent?.requestDisallowInterceptTouchEvent(true)
+                }
+            }
         }
 
+        val superReturn = super.onTouchEvent(event)
+        if (event.action == MotionEvent.ACTION_UP) {
+            takeOverScrolling = true
+        }
         return superReturn
     }
 
     private inner class WebViewPagerAdapter : PagerAdapter() {
-
         override fun getCount(): Int {
             return horizontalPageCount
         }
@@ -207,21 +199,8 @@ class WebViewPager : ViewPager {
         }
 
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-
             val view = LayoutInflater.from(container.context)
                 .inflate(R.layout.view_webview_pager, container, false)
-
-            // Debug code
-            // Set alpha for folioWebView in folio_page_fragment.xml to 0.5 also.
-            /*if (position % 2 == 0) {
-                view.setBackgroundResource(R.drawable.green_border_background)
-            } else {
-                view.setBackgroundResource(R.drawable.blue_border_background)
-            }
-
-            val textView = view.findViewById<TextView>(R.id.textView)
-            textView.text = Integer.toString(position)*/
-
             container.addView(view)
             return view
         }

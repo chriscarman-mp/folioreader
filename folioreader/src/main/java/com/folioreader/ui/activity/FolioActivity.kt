@@ -86,7 +86,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
     View.OnSystemUiVisibilityChangeListener {
     private var bookFileName: String? = null
 
-    private var mFolioPageViewPager: DirectionalViewpager? = null
+    var mFolioPageViewPager: DirectionalViewpager? = null
     private var actionBar: ActionBar? = null
     private var appBarLayout: FolioAppBarLayout? = null
     private var toolbar: Toolbar? = null
