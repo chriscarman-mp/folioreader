@@ -10,9 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.FrameLayout
 import android.widget.ImageButton
-import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
@@ -27,9 +25,8 @@ import com.folioreader.ui.activity.FolioActivityCallback
 import com.folioreader.ui.adapter.FontAdapter
 import com.folioreader.ui.fragment.MediaControllerFragment
 import com.folioreader.util.AppUtil
+import com.folioreader.model.event.ThemeChangedEvent
 import com.folioreader.util.UiUtil
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.greenrobot.eventbus.EventBus
 
@@ -264,6 +261,7 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 isNightMode = !isNightMode
                 config.isNightMode = isNightMode
                 AppUtil.saveConfig(activity, config)
+                EventBus.getDefault().post(ThemeChangedEvent(isNightMode));
                 EventBus.getDefault().post(ReloadDataEvent())
             }
 
