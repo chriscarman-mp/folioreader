@@ -190,8 +190,8 @@ class FolioPageFragment() : Fragment(),
         highlightStyle =
             HighlightImpl.HighlightStyle.classForStyle(HighlightImpl.HighlightStyle.Normal)
         mRootView = inflater.inflate(R.layout.folio_page_fragment, container, false)
-        mPagesLeftTextView = mRootView?.findViewById(R.id.pagesLeft)
-        mMinutesLeftTextView = mRootView?.findViewById(R.id.minutesLeft)
+//        mPagesLeftTextView = mRootView?.findViewById(R.id.pagesLeft)
+//        mMinutesLeftTextView = mRootView?.findViewById(R.id.minutesLeft)
 
         mConfig = AppUtil.getSavedConfig(context)
 
@@ -785,8 +785,8 @@ class FolioPageFragment() : Fragment(),
                 getString(R.string.less_than_minute)
             }
 
-            mMinutesLeftTextView?.text = minutesRemainingStr
-            mPagesLeftTextView?.text = pagesRemainingStr
+//            mMinutesLeftTextView?.text = minutesRemainingStr
+//            mPagesLeftTextView?.text = pagesRemainingStr
         } catch (exp: java.lang.ArithmeticException) {
             Log.e("divide error", exp.toString())
         } catch (exp: IllegalStateException) {
