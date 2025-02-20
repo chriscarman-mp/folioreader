@@ -651,33 +651,69 @@ function bodyOrHtml() {
  * @returns {(Element|Text|Range)} nodeOrRange
  */
 function scrollToNodeOrRange(nodeOrRange) {
+  try {
+    // Get the scrolling element and screen width.
     const scrollingElement = document.scrollingElement || document.documentElement;
     const screenWidth = document.documentElement.clientWidth;
+    console.log("[scrollToNodeOrRange] scrollingElement:", scrollingElement);
+    console.log("[scrollToNodeOrRange] screenWidth:", screenWidth);
 
-    let elementCenter;
+    let elementLeft;
 
-    if (nodeOrRange instanceof Range || nodeOrRange.nodeType === Node.TEXT_NODE) {
-        // For text nodes or ranges, calculate the center of the bounding box
-        const rect = RangeFix.getBoundingClientRect(nodeOrRange);
-        elementCenter = scrollingElement.scrollLeft + rect.left + (rect.width / 2);
-    } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
-        // For elements, calculate the center based on offset
-        elementCenter = nodeOrRange.offsetLeft + (nodeOrRange.offsetWidth / 2);
-    } else {
-        throw new Error("Invalid node or range type");
+    // If nodeOrRange is a TEXT_NODE but doesn't have getClientRects,
+    // wrap it in a Range.
+    if (nodeOrRange.nodeType === Node.TEXT_NODE &&
+        typeof nodeOrRange.getClientRects !== "function") {
+      const range = document.createRange();
+      range.selectNodeContents(nodeOrRange);
+      nodeOrRange = range;
+      console.log("[scrollToNodeOrRange] Converted TEXT_NODE to Range");
     }
 
-    // Calculate the target page index
-    const pageIndex = Math.floor(elementCenter / screenWidth);
+    if (nodeOrRange instanceof Range) {
+      // Get all rects for the range.
+      const rects = nodeOrRange.getClientRects();
+      if (rects.length === 0) {
+        throw new Error("Range has no client rects");
+      }
+      // Use the left coordinate of the last rect.
+      const lastRect = rects[rects.length - 1];
+      console.log("[scrollToNodeOrRange] Last rect for Range:", lastRect);
+      elementLeft = scrollingElement.scrollLeft + lastRect.left;
+      console.log("[scrollToNodeOrRange] Calculated elementLeft (Range):", elementLeft);
+    } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
+      // For element nodes, get its client rects.
+      const rects = nodeOrRange.getClientRects();
+      if (rects.length > 0) {
+        const lastRect = rects[rects.length - 1];
+        console.log("[scrollToNodeOrRange] Last rect for Element:", lastRect);
+        elementLeft = scrollingElement.scrollLeft + lastRect.left;
+      } else {
+        elementLeft = nodeOrRange.offsetLeft;
+        console.log("[scrollToNodeOrRange] Fallback elementLeft (offsetLeft):", elementLeft);
+      }
+    } else {
+      throw new Error("Invalid node or range type");
+    }
 
-    // Calculate the target scroll position
+    // Calculate the target page index based on the left coordinate.
+    const pageIndex = Math.floor(elementLeft / screenWidth);
+    console.log("[scrollToNodeOrRange] Calculated pageIndex:", pageIndex);
+
+    // Calculate the target scroll position.
     const targetScrollLeft = pageIndex * screenWidth;
+    console.log("[scrollToNodeOrRange] Calculated targetScrollLeft:", targetScrollLeft);
 
-    // Scroll to the target position
+    // Scroll to the target position.
     scrollingElement.scrollLeft = targetScrollLeft;
+    console.log("[scrollToNodeOrRange] Set scrollingElement.scrollLeft to:", scrollingElement.scrollLeft);
 
-    // Notify the native layer (e.g., Android) of the current page
+    // Notify the native layer of the current page.
     WebViewPager.setCurrentPage(pageIndex);
+    console.log("[scrollToNodeOrRange] Called WebViewPager.setCurrentPage with:", pageIndex);
+  } catch (error) {
+    console.error("[scrollToNodeOrRange] Error occurred:", error);
+  }
 }
 
 function logNodeOrRange(nodeOrRange) {
