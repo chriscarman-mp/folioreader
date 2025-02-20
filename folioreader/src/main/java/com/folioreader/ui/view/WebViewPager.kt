@@ -18,18 +18,16 @@ class WebViewPager : ViewPager {
         val LOG_TAG: String = WebViewPager::class.java.simpleName
     }
 
+    // Reference to the outer (chapter) pager
     var outerPager: DirectionalViewpager? = null
 
     internal var horizontalPageCount: Int = 0
     private var folioWebView: FolioWebView? = null
-    private var takeOverScrolling: Boolean = false
     var isScrolling: Boolean = false
         private set
     private var uiHandler: Handler? = null
     private var gestureDetector: GestureDetectorCompat? = null
-
     private var lastGestureType: LastGestureType? = null
-
     private var xDown = 0f
 
     private enum class LastGestureType {
@@ -45,21 +43,15 @@ class WebViewPager : ViewPager {
         uiHandler = Handler()
         gestureDetector = GestureDetectorCompat(context, GestureListener())
 
+        // Listen for page scroll events
         addOnPageChangeListener(object : OnPageChangeListener {
-            override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
-            ) {
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                 isScrolling = true
-
-                if (takeOverScrolling && folioWebView != null) {
-                    val scrollX = folioWebView!!.getScrollXPixelsForPage(position) + positionOffsetPixels
-                    folioWebView!!.scrollTo(scrollX, 0)
+                folioWebView?.let { webView ->
+                    val scrollX = webView.getScrollXPixelsForPage(position) + positionOffsetPixels
+                    webView.scrollTo(scrollX, 0)
                 }
-
                 if (positionOffsetPixels == 0) {
-                    takeOverScrolling = false
                     isScrolling = false
                 }
             }
@@ -69,18 +61,22 @@ class WebViewPager : ViewPager {
             }
 
             override fun onPageScrollStateChanged(state: Int) {
-                // No additional handling
+                // No extra handling needed here.
             }
         })
     }
 
     fun setHorizontalPageCount(horizontalPageCount: Int) {
         this.horizontalPageCount = horizontalPageCount
-        adapter = WebViewPagerAdapter()
-        currentItem = 0
+        if (adapter == null) {
+            adapter = WebViewPagerAdapter()
+        } else {
+            (adapter as PagerAdapter).notifyDataSetChanged()
+        }
 
-        if (folioWebView == null)
+        if (folioWebView == null) {
             folioWebView = (parent as View).findViewById(R.id.folioWebView)
+        }
     }
 
     @JavascriptInterface
@@ -116,28 +112,18 @@ class WebViewPager : ViewPager {
             lastGestureType = LastGestureType.OnLongPress
         }
 
-        override fun onScroll(
-            e1: MotionEvent?,
-            e2: MotionEvent,
-            distanceX: Float,
-            distanceY: Float
-        ): Boolean {
+        override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
             lastGestureType = LastGestureType.OnScroll
             return false
         }
 
-        override fun onFling(
-            e1: MotionEvent?,
-            e2: MotionEvent,
-            velocityX: Float,
-            velocityY: Float
-        ): Boolean {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
             Log.d(LOG_TAG, ">>> onFling")
             Log.d(LOG_TAG, ">>> onFling currentItem: $currentItem")
             Log.d(LOG_TAG, ">>> onFling horizontalPageCount: $horizontalPageCount")
-            val MIN_FLING_VELOCITY = 1000 // adjust threshold as needed
+            val MIN_FLING_VELOCITY = 1000
 
-            // If on the last page and fling left (velocityX negative)
+            // Edge fling: if on the last page and swiping left
             if (currentItem == horizontalPageCount - 1 && velocityX < -MIN_FLING_VELOCITY) {
                 outerPager?.let { pager ->
                     pager.setCurrentItem(pager.currentItem + 1, true)
@@ -145,7 +131,7 @@ class WebViewPager : ViewPager {
                     return true
                 } ?: Log.v(LOG_TAG, ">>> onFling - outerPager is null!")
             }
-            // If on the first page and fling right (velocityX positive)
+            // Edge fling: if on the first page and swiping right
             if (currentItem == 0 && velocityX > MIN_FLING_VELOCITY) {
                 outerPager?.let { pager ->
                     pager.setCurrentItem(pager.currentItem - 1, true)
@@ -160,43 +146,33 @@ class WebViewPager : ViewPager {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
 
-        // Let gestureDetector handle the event
+        // Let the gesture detector handle the event.
         gestureDetector?.onTouchEvent(event)
 
-        // Capture initial x coordinate on ACTION_DOWN
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 xDown = event.x
             }
             MotionEvent.ACTION_MOVE -> {
                 val dx = event.x - xDown
+                // If on the very first or last page, allow the parent to intercept swipe events.
                 if (currentItem == horizontalPageCount - 1 && dx < 0) {
-                    // At last page and swiping left: allow parent to intercept
                     parent?.requestDisallowInterceptTouchEvent(false)
                 } else if (currentItem == 0 && dx > 0) {
-                    // At first page and swiping right: allow parent to intercept
                     parent?.requestDisallowInterceptTouchEvent(false)
                 } else {
                     parent?.requestDisallowInterceptTouchEvent(true)
                 }
             }
         }
-
-        val superReturn = super.onTouchEvent(event)
-        if (event.action == MotionEvent.ACTION_UP) {
-            takeOverScrolling = true
-        }
-        return superReturn
+        // Let the default handling continue.
+        return super.onTouchEvent(event)
     }
 
     private inner class WebViewPagerAdapter : PagerAdapter() {
-        override fun getCount(): Int {
-            return horizontalPageCount
-        }
+        override fun getCount(): Int = horizontalPageCount
 
-        override fun isViewFromObject(view: View, `object`: Any): Boolean {
-            return view === `object`
-        }
+        override fun isViewFromObject(view: View, `object`: Any): Boolean = view === `object`
 
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val view = LayoutInflater.from(container.context)
