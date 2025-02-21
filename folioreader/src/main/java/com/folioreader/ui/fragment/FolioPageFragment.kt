@@ -567,7 +567,7 @@ class FolioPageFragment() : Fragment(),
             if (urlOfEpub != true) {
                 // Otherwise, give the default behavior (open in browser)
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(intent)
+                // startActivity(intent)
             }
 
             return true
