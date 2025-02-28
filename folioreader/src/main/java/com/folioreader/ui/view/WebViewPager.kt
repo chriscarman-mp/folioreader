@@ -2,6 +2,7 @@ package com.folioreader.ui.view
 
 import android.content.Context
 import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
@@ -90,16 +91,15 @@ class WebViewPager : ViewPager {
     @JavascriptInterface
     fun scrollToPrecisePosition(position: Double) {
         folioWebView?.let { webView ->
-            // This is the logic you mentioned
-            // Convert the floating position to an int offset
-            val pageWidth = webView.getScrollXPixelsForPage(1) // or some logic
-            val scrollX = (position * pageWidth).toInt()
-
-            webView.scrollTo(scrollX, 0)
-
-            Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] position: $position")
-            Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] pageWidth: $pageWidth")
-            Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] scrollX: $scrollX")
+            // Post the scroll action to the main thread
+            Handler(Looper.getMainLooper()).post {
+                val pageWidth = webView.getScrollXPixelsForPage(1) // get page width on UI thread
+                val scrollX = (position * pageWidth).toInt()
+                webView.scrollTo(scrollX, 0)
+                Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] position: $position")
+                Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] pageWidth: $pageWidth")
+                Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] scrollX: $scrollX")
+            }
         }
     }
 
