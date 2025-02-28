@@ -53,11 +53,11 @@ class WebViewPager : ViewPager {
                     val scrollX = (precisePosition * pageWidth).toInt()
                     webView.scrollTo(scrollX, 0)
 
-                    Log.d(LOG_TAG, "[WebViewPager] position: $position")
-                    Log.d(LOG_TAG, "[WebViewPager] positionOffset: $positionOffset")
-                    Log.d(LOG_TAG, "[WebViewPager] precisePosition: $precisePosition")
-                    Log.d(LOG_TAG, "[WebViewPager] pageWidth: $pageWidth")
-                    Log.d(LOG_TAG, "[WebViewPager] scrollX: $scrollX")
+                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] position: $position")
+                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] positionOffset: $positionOffset")
+                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] precisePosition: $precisePosition")
+                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] pageWidth: $pageWidth")
+                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] scrollX: $scrollX")
                 }
                 if (positionOffsetPixels == 0) {
                     isScrolling = false
@@ -84,6 +84,22 @@ class WebViewPager : ViewPager {
 
         if (folioWebView == null) {
             folioWebView = (parent as View).findViewById(R.id.folioWebView)
+        }
+    }
+
+    @JavascriptInterface
+    fun scrollToPrecisePosition(position: Double) {
+        folioWebView?.let { webView ->
+            // This is the logic you mentioned
+            // Convert the floating position to an int offset
+            val pageWidth = webView.getScrollXPixelsForPage(1) // or some logic
+            val scrollX = (position * pageWidth).toInt()
+
+            webView.scrollTo(scrollX, 0)
+
+            Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] position: $position")
+            Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] pageWidth: $pageWidth")
+            Log.d(LOG_TAG, "[WebViewPager][scrollToPrecisePosition] scrollX: $scrollX")
         }
     }
 
