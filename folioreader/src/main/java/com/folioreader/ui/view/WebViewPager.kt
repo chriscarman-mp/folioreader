@@ -11,6 +11,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.folioreader.R
+import kotlin.math.abs
 
 class WebViewPager : ViewPager {
 
@@ -49,16 +50,24 @@ class WebViewPager : ViewPager {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                 isScrolling = true
                 folioWebView?.let { webView ->
+                    // Always compute the precise position.
                     val precisePosition = position + positionOffset
                     val pageWidth = webView.getScrollXPixelsForPage(1) ?: 0
-                    val scrollX = (precisePosition * pageWidth).toInt()
-                    webView.scrollTo(scrollX, 0)
+                    val computedScrollX = (precisePosition * pageWidth).toInt()
 
-                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] position: $position")
-                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] positionOffset: $positionOffset")
-                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] precisePosition: $precisePosition")
-                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] pageWidth: $pageWidth")
-                    Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] scrollX: $scrollX")
+                    // Only update scroll if the difference is significant.
+                    val currentScrollX = webView.scrollX
+                    val threshold = 2 // adjust as needed
+                    if (abs(currentScrollX - computedScrollX) > threshold) {
+                        webView.scrollTo(computedScrollX, 0)
+                        Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] position: $position")
+                        Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] positionOffset: $positionOffset")
+                        Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] precisePosition: $precisePosition")
+                        Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] pageWidth: $pageWidth")
+                        Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] scrollX: $computedScrollX")
+                    } else {
+                        Log.d(LOG_TAG, "[WebViewPager][onPageScrolled] scrollX unchanged; currentScrollX: $currentScrollX, computedScrollX: $computedScrollX")
+                    }
                 }
                 if (positionOffsetPixels == 0) {
                     isScrolling = false
@@ -66,11 +75,11 @@ class WebViewPager : ViewPager {
             }
 
             override fun onPageSelected(position: Int) {
-                Log.v(LOG_TAG, "-> onPageSelected -> $position")
+                Log.v(LOG_TAG, "[WebViewPager][onPageSelected]: $position")
             }
 
             override fun onPageScrollStateChanged(state: Int) {
-                // No extra handling needed here.
+                Log.v(LOG_TAG, "[WebViewPager][onPageScrollStateChanged]: $state")
             }
         })
     }
