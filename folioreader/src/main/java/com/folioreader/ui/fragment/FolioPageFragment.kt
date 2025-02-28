@@ -394,6 +394,7 @@ class FolioPageFragment() : Fragment(),
         val webViewLayout = mRootView?.findViewById<FrameLayout>(R.id.webViewLayout)
         mWebview = webViewLayout?.findViewById(R.id.folioWebView)
         mWebview?.setParentFragment(this)
+        mWebview?.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         webViewPager = webViewLayout?.findViewById(R.id.webViewPager)
 
         // Set the outer pager reference:

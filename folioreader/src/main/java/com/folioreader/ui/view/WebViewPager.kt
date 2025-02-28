@@ -48,8 +48,16 @@ class WebViewPager : ViewPager {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                 isScrolling = true
                 folioWebView?.let { webView ->
-                    val scrollX = webView.getScrollXPixelsForPage(position) + positionOffsetPixels
+                    val precisePosition = position + positionOffset
+                    val pageWidth = webView.getScrollXPixelsForPage(1) ?: 0
+                    val scrollX = (precisePosition * pageWidth).toInt()
                     webView.scrollTo(scrollX, 0)
+
+                    Log.d(LOG_TAG, "[WebViewPager] position: $position")
+                    Log.d(LOG_TAG, "[WebViewPager] positionOffset: $positionOffset")
+                    Log.d(LOG_TAG, "[WebViewPager] precisePosition: $precisePosition")
+                    Log.d(LOG_TAG, "[WebViewPager] pageWidth: $pageWidth")
+                    Log.d(LOG_TAG, "[WebViewPager] scrollX: $scrollX")
                 }
                 if (positionOffsetPixels == 0) {
                     isScrolling = false
