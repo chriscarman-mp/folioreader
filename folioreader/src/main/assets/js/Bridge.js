@@ -537,24 +537,6 @@ function checkCompatMode() {
     }
 }
 
-function horizontalRecheck() {
-
-    horizontalIntervalCounter += horizontalIntervalPeriod;
-
-    if (window.scrollWidth != document.documentElement.scrollWidth) {
-        // Rare condition
-        // This might happen when document.documentElement.scrollWidth gives incorrect value
-        // when the webview is busy re-drawing contents.
-        //console.log("-> horizontalIntervalCounter = " + horizontalIntervalCounter);
-        console.warn("-> scrollWidth changed from " + window.scrollWidth + " to " +
-            document.documentElement.scrollWidth);
-        postInitHorizontalDirection();
-    }
-
-    if (horizontalIntervalCounter >= horizontalIntervalLimit)
-        clearInterval(horizontalInterval);
-}
-
 function initHorizontalDirection() {
     // Reset and apply the column layout
     preInitHorizontalDirection();
@@ -652,6 +634,7 @@ function bodyOrHtml() {
  */
 function scrollToNodeOrRange(nodeOrRange) {
   try {
+    logNodeOrRange(nodeOrRange);
     // Get the scrolling element and screen width.
     const scrollingElement = document.scrollingElement || document.documentElement;
     const screenWidth = document.documentElement.clientWidth;
@@ -700,13 +683,7 @@ function scrollToNodeOrRange(nodeOrRange) {
     const pageIndex = Math.floor(elementLeft / screenWidth);
     console.log("[scrollToNodeOrRange] Calculated pageIndex:", pageIndex);
 
-    // Calculate the target scroll position.
-    const targetScrollLeft = pageIndex * screenWidth;
-    console.log("[scrollToNodeOrRange] Calculated targetScrollLeft:", targetScrollLeft);
-
-    // Scroll to the target position.
-    scrollingElement.scrollLeft = targetScrollLeft;
-    console.log("[scrollToNodeOrRange] Set scrollingElement.scrollLeft to:", scrollingElement.scrollLeft);
+    WebViewPager.scrollToPrecisePosition(pageIndex);
 
     // Notify the native layer of the current page.
     WebViewPager.setCurrentPage(pageIndex);
@@ -716,23 +693,55 @@ function scrollToNodeOrRange(nodeOrRange) {
   }
 }
 
+function logTextContent(nodeOrRange) {
+    if (nodeOrRange instanceof Range) {
+        // For a Range, toString() returns the text within it.
+        console.log("[logTextContent] Range text:", nodeOrRange.toString());
+    } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
+        // For an element, use textContent.
+        console.log("[logTextContent] Element text:", nodeOrRange.textContent);
+    } else if (nodeOrRange.nodeType === Node.TEXT_NODE) {
+        // For a text node, use its data.
+        console.log("[logTextContent] Text node content:", nodeOrRange.data);
+    } else {
+        console.log("[logTextContent] Unknown node or range type");
+    }
+}
+
 function logNodeOrRange(nodeOrRange) {
     if (nodeOrRange instanceof Range) {
-        console.log('>>> Type: Range');
-        console.log('>>> Range text:', nodeOrRange.toString());
-        var frag = nodeOrRange.cloneContents();
-        var div = document.createElement('div');
-        div.appendChild(frag);
-        console.log('>>> Range cloneContents HTML:', div.innerHTML);
+        console.log("[logNodeOrRange] Type: Range");
+        console.log("[logNodeOrRange] Range text:", nodeOrRange.toString());
+        const rects = nodeOrRange.getClientRects();
+        console.log("[logNodeOrRange] Range client rects:");
+        for (let i = 0; i < rects.length; i++) {
+            console.log(`[logNodeOrRange] Rect ${i}: left=${rects[i].left}, top=${rects[i].top}, width=${rects[i].width}, height=${rects[i].height}`);
+        }
     } else if (nodeOrRange.nodeType === Node.ELEMENT_NODE) {
-        console.log('>>> Type: Element');
-        console.log('>>> Outer HTML:', nodeOrRange.outerHTML);
+        console.log("[logNodeOrRange] Type: Element");
+        console.log("[logNodeOrRange] Outer HTML:", nodeOrRange.outerHTML);
+        console.log("[logNodeOrRange] Text content:", nodeOrRange.textContent);
+        const rect = nodeOrRange.getBoundingClientRect();
+        console.log("[logNodeOrRange] Bounding rect:", rect);
+        const rects = nodeOrRange.getClientRects();
+        console.log("[logNodeOrRange] Client rects:");
+        for (let i = 0; i < rects.length; i++) {
+            console.log(`  [logNodeOrRange] Rect ${i}: left=${rects[i].left}, top=${rects[i].top}, width=${rects[i].width}, height=${rects[i].height}`);
+        }
     } else if (nodeOrRange.nodeType === Node.TEXT_NODE) {
-        console.log('>>> Type: Text Node');
-        console.log('>>> Text content:', nodeOrRange.data);
+        console.log("[logNodeOrRange] Type: Text Node");
+        console.log("[logNodeOrRange] Text content:", nodeOrRange.data);
+        // Optionally, create a Range for this text node
+        const range = document.createRange();
+        range.selectNodeContents(nodeOrRange);
+        console.log("[logNodeOrRange] Range text (from Text Node):", range.toString());
+        const rects = range.getClientRects();
+        console.log("[logNodeOrRange] Text Node client rects:");
+        for (let i = 0; i < rects.length; i++) {
+            console.log(`[logNodeOrRange] Rect ${i}: left=${rects[i].left}, top=${rects[i].top}, width=${rects[i].width}, height=${rects[i].height}`);
+        }
     } else {
-        console.log('>>> Other type:', nodeOrRange);
-        console.dir(nodeOrRange);
+        console.log("[logNodeOrRange] Unknown node or range type:", nodeOrRange);
     }
 }
 
