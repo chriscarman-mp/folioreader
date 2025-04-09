@@ -8,9 +8,11 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.text.TextUtils
 import android.util.Log
+import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageButton
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
@@ -234,6 +236,31 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
 
         searchView = itemSearch.actionView as FolioSearchView
         searchView.init(componentName, config)
+
+        try {
+            val searchEditTextId = androidx.appcompat.R.id.search_src_text
+            val searchEditText = searchView.findViewById<EditText>(searchEditTextId)
+
+            if (searchEditText != null) {
+                val disabledCallback = object : ActionMode.Callback {
+                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                        return false
+                    }
+                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                        return false
+                    }
+                    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+                        return false
+                    }
+                    override fun onDestroyActionMode(mode: ActionMode?) { }
+                }
+
+                searchEditText.customSelectionActionModeCallback = disabledCallback
+                searchEditText.customInsertionActionModeCallback = disabledCallback
+            }
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error during search EditText modification", e)
+        }
 
         itemSearch.expandActionView()
 
